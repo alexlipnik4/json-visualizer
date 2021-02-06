@@ -1,5 +1,4 @@
-import { IconButton } from '@material-ui/core';
-import { ArrowRight } from '@material-ui/icons';
+
 import React from 'react';
 import { LocalStorageService } from '../../../common/services/localStorageService';
 import MainPage from './Main';
@@ -13,7 +12,9 @@ export type FileObject = {
 }
 
 const MainController: React.FC = () => {
-  const [data, setFile] = React.useState<null| FileObject>(null);
+  const [data, setData] = React.useState<null| FileObject>(null);
+  const [filteredData, setFilteredData] = React.useState<null| FileObject>(null);
+  const [textFiledValue, setTextFiledValue] = React.useState<string>('');
   const [jsonState, setJsonState] = React.useState<JsonState>({
   });
 
@@ -25,7 +26,7 @@ const MainController: React.FC = () => {
 
   function onReaderLoad(this: FileReader, event: ProgressEvent<FileReader>){
     var obj = event.target && JSON.parse(event.target.result as string);
-    setFile(obj);
+    setData(obj);
   }
 
   const onRowClick = (id: string) => {
@@ -44,10 +45,50 @@ const MainController: React.FC = () => {
     return newJsonState;
   }
 
+  const recursiveFilter = (_data: FileObject, _filter: string[]) => {
+    let FilterArray: string[] = _filter || [];
+
+    const newFilterArray = Object.keys(_data).filter((key) => {
+      if(typeof _data[key] === 'object') {
+        FilterArray = recursiveFilter(_data[key], FilterArray);
+      }
+      return (
+        key.includes(textFiledValue) || (typeof _data[key] === 'string' && _data[key].includes(textFiledValue))
+    )})
+    return newFilterArray.concat(FilterArray);
+  }
+
+  const recursiveDataFilter = (_data: FileObject, _filter: {}, filtersArray: string[]) => {
+    let object: FileObject = _filter || {};
+
+    Object.keys(_data as FileObject).forEach(key => {
+      if(typeof _data[key] === 'object') {
+        object = recursiveDataFilter(_data[key], object, filtersArray);
+      }
+      if (filtersArray.includes(key)){
+        object[key] = _data[key]
+      }
+    });
+
+    return object;
+  }
+
+  const onSearch = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' && data) {
+      const filterValue: string[] = recursiveFilter(data, []);
+      const newState = recursiveDataFilter(data, {}, filterValue)
+      setFilteredData(newState);
+    }
+  }
+
+  const onTextFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTextFiledValue(e.target.value);
+  }
+
   React.useEffect(() => {
     const file: null| FileObject = LocalStorageService.getItem('file');
     if(file) {
-      setFile(file);
+      setData(file);
     }
   }, []);
 
@@ -60,13 +101,15 @@ const MainController: React.FC = () => {
     }
   }, [data])
 
-
   return (
     <MainPage 
-      data={data}
+      data={filteredData || data}
       onChange={onChange}
       onRowClick={onRowClick}
       jsonState={jsonState}
+      onSearch={onSearch}
+      onTextFieldChange={onTextFieldChange}
+      textFiledValue={textFiledValue}
     />
   )
 }

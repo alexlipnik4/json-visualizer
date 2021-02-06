@@ -7,13 +7,19 @@
   align-items: center;
   box-sizing: border-box;
 
+  &__search-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   &__input-container {
+    // margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 20px;
     box-sizing: border-box;
-    border-bottom: 2px solid #dccfcf;
+    // border-bottom: 2px solid #dccfcf;
     width: 100%;
 
     svg {
