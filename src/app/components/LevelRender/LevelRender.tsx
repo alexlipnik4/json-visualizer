@@ -24,8 +24,8 @@ export const LevelRender: React.FC<{
           <IconButton onClick={() => onRowClick(row)} aria-label="delete" size="small">
             <ArrowRight fontSize="inherit" />
           </IconButton>
-          <div className="content-container__row--object">{`${row}:`}</div>
-          <div className="content-container__bracket">{data[row] instanceof Array ? '[' : '{'}</div>
+          <Typography className="content-container__row--object">{`${row}:`}</Typography>
+          <Typography component="div" style={{marginLeft: '16px', fontWeight: 'lighter'}} className="content-container__bracket">{data[row] instanceof Array ? '[' : '{'}</Typography>
         </div>
 
         {jsonState[row] && (
